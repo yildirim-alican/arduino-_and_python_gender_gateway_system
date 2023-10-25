@@ -1,103 +1,81 @@
-# Gender-and-Age-Detection   <img alt="GitHub" src="https://img.shields.io/github/license/smahesh29/Gender-and-Age-Detection">
+This Python project appears to use OpenCV (Open Source Computer Vision Library) and a webcam (or other video input) to perform real-time face detection and gender/age classification. The project also sends data to a connected Arduino via a serial connection based on the results of the face analysis. Here's an explanation of the code:
 
+Importing Libraries:
 
-<h2>Objective :</h2>
-<p>To build a gender and age detector that can approximately guess the gender and age of the person (face) in a picture or through webcam.</p>
+The code starts by importing necessary libraries, including cv2 (OpenCV for image processing), argparse for command-line argument parsing, and serial for serial communication with an Arduino.
+Listing Valid Serial Ports:
 
-<h2>About the Project :</h2>
-<p>In this Python Project, I had used Deep Learning to accurately identify the gender and age of a person from a single image of a face. I used the models trained by <a href="https://talhassner.github.io/home/projects/Adience/Adience-data.html">Tal Hassner and Gil Levi</a>. The predicted gender may be one of ‘Male’ and ‘Female’, and the predicted age may be one of the following ranges- (0 – 2), (4 – 6), (8 – 12), (15 – 20), (25 – 32), (38 – 43), (48 – 53), (60 – 100) (8 nodes in the final softmax layer). It is very difficult to accurately guess an exact age from a single image because of factors like makeup, lighting, obstructions, and facial expressions. And so, I made this a classification problem instead of making it one of regression.</p>
+It scans for available serial ports and lists them. It also initializes a serial connection (ser) and sets the baud rate to 115200.
+Opening Serial Port:
 
-<h2>Dataset :</h2>
-<p>For this python project, I had used the Adience dataset; the dataset is available in the public domain and you can find it <a href="https://www.kaggle.com/ttungl/adience-benchmark-gender-and-age-classification">here</a>. This dataset serves as a benchmark for face photos and is inclusive of various real-world imaging conditions like noise, lighting, pose, and appearance. The images have been collected from Flickr albums and distributed under the Creative Commons (CC) license. It has a total of 26,580 photos of 2,284 subjects in eight age ranges (as mentioned above) and is about 1GB in size. The models I used had been trained on this dataset.</p>
+It opens the first valid serial port found, if any.
+Defining the highlightFace Function:
 
-<h2>Additional Python Libraries Required :</h2>
-<ul>
-  <li>OpenCV</li>
-  
-       pip install opencv-python
-</ul>
-<ul>
- <li>argparse</li>
-  
-       pip install argparse
-</ul>
+This function takes the input frame and a confidence threshold as parameters.
+It uses a pre-trained deep learning model to detect faces in the input frame.
+It draws rectangles around detected faces and returns the modified frame with the rectangles and a list of face bounding boxes.
+Command-Line Arguments:
 
-<h2>The contents of this Project :</h2>
-<ul>
-  <li>opencv_face_detector.pbtxt</li>
-  <li>opencv_face_detector_uint8.pb</li>
-  <li>age_deploy.prototxt</li>
-  <li>age_net.caffemodel</li>
-  <li>gender_deploy.prototxt</li>
-  <li>gender_net.caffemodel</li>
-  <li>a few pictures to try the project on</li>
-  <li>detect.py</li>
- </ul>
- <p>For face detection, we have a .pb file- this is a protobuf file (protocol buffer); it holds the graph definition and the trained weights of the model. We can use this to run the trained model. And while a .pb file holds the protobuf in binary format, one with the .pbtxt extension holds it in text format. These are TensorFlow files. For age and gender, the .prototxt files describe the network configuration and the .caffemodel file defines the internal states of the parameters of the layers.</p>
- 
- <h2>Usage :</h2>
- <ul>
-  <li>Download my Repository</li>
-  <li>Open your Command Prompt or Terminal and change directory to the folder where all the files are present.</li>
-  <li><b>Detecting Gender and Age of face in Image</b> Use Command :</li>
-  
-      python detect.py --image <image_name>
-</ul>
-  <p><b>Note: </b>The Image should be present in same folder where all the files are present</p> 
-<ul>
-  <li><b>Detecting Gender and Age of face through webcam</b> Use Command :</li>
-  
-      python detect.py
-</ul>
-<ul>
-  <li>Press <b>Ctrl + C</b> to stop the program execution.</li>
-</ul>
+It uses the argparse library to accept an optional --image argument. If provided, it will read video input from the specified image or use the default camera (if no argument is provided).
+Loading Pre-trained Models:
 
-# Working:
-[![Watch the video](https://img.youtube.com/vi/ReeccRD21EU/0.jpg)](https://youtu.be/ReeccRD21EU)
+It loads three pre-trained models for face detection, age classification, and gender classification. These models are in the form of prototxt and caffemodel files.
+Capturing Video:
 
-<h2>Examples :</h2>
-<p><b>NOTE:- I downloaded the images from Google,if you have any query or problem i can remove them, i just used it for Educational purpose.</b></p>
+It captures video from the specified source (camera or image file) using OpenCV's VideoCapture function.
+Face Detection and Classification:
 
-    >python detect.py --image girl1.jpg
-    Gender: Female
-    Age: 25-32 years
-    
-<img src="Example/Detecting age and gender girl1.png">
+The code then enters a loop where it captures frames from the video source.
+It calls the highlightFace function to detect faces in the captured frame.
+If no faces are detected, it sends a "none" message to the Arduino via the serial connection.
+If faces are detected, it performs gender and age classification for each detected face.
+It sends the gender information to the Arduino via the serial connection.
+Depending on the age classification, it sends a "valid" or "invalid" message to the Arduino.
+Serial Communication with Arduino:
 
-    >python detect.py --image girl2.jpg
-    Gender: Female
-    Age: 8-12 years
-    
-<img src="Example/Detecting age and gender girl2.png">
+After determining gender and age, the code sends encoded messages to the Arduino via the serial connection. It encodes the gender and age information and whether the age is "valid" or "invalid."
+Displaying Results:
 
-    >python detect.py --image kid1.jpg
-    Gender: Male
-    Age: 4-6 years    
-    
-<img src="Example/Detecting age and gender kid1.png">
+The code displays the gender and age information on the captured frame and shows it using OpenCV's imshow function.
+This project is essentially a simple facial analysis system that uses a webcam or image input to detect faces and determine the gender and age of the individuals in the frame. It communicates this information to an Arduino device through a serial connection. It can be used for various applications, such as age-restricted access control or monitoring.
 
-    >python detect.py --image kid2.jpg
-    Gender: Female
-    Age: 4-6 years  
-    
-<img src="Example/Detecting age and gender kid2.png">
+Components Used:
 
-    >python detect.py --image man1.jpg
-    Gender: Male
-    Age: 38-43 years
-    
-<img src="Example/Detecting age and gender man1.png">
+A 16x2 LCD (Liquid Crystal Display) connected to digital pins 3 to 8.
+An RGB LED with red, green, and blue pins connected to digital pins 9, 10, and 11, respectively.
+A piezo buzzer connected to analog pin A5.
+Initialization:
 
-    >python detect.py --image man2.jpg
-    Gender: Male
-    Age: 25-32 years
-    
-<img src="Example/Detecting age and gender man2.png">
+The project begins by including the "LiquidCrystal" library and declaring some integer variables (red, green, blue, buzzer, and sayac) to represent pin numbers and a counter variable.
+Two string variables (serialData and cmd) are declared to store incoming serial data commands.
+Setup:
 
-    >python detect.py --image woman1.jpg
-    Gender: Female
-    Age: 38-43 years
-    
-<img src="Example/Detecting age and gender woman1.png">
-              
+Serial communication is initialized with a baud rate of 115200, and the timeout is set to 100 milliseconds.
+The 16x2 LCD is initialized and displays a startup message.
+The pins for the RGB LED and the buzzer are set as outputs. The initial states for these components are configured:
+RGB LED pins are set to LOW, meaning they start in the off state.
+The buzzer pin is set to HIGH, effectively turning it off.
+Loop:
+
+The loop function constantly checks for incoming serial data via the Serial interface. If there's data available, it reads the data into the serialData variable, converts it to lowercase, and trims any leading/trailing whitespace.
+
+It then checks the value of serialData and performs the following actions based on the command received:
+
+If the command is "kadin" (which means "woman" in Turkish), it:
+
+Turns on the green LED and turns off the buzzer.
+Updates the LCD with a message indicating "KADIN" and "GECIS UYGUN."
+Sounds a short buzzer beep.
+Waits for 5 seconds, then turns off the green LED.
+If the command is "erkek" (which means "man" in Turkish), it:
+
+Turns on the red LED and turns off the buzzer.
+Updates the LCD with a message indicating "ERKEK" and "GECIS KAPALI."
+Repeats a buzzer and LED pattern for 10 cycles.
+Waits for 2 seconds, then turns off the red LED.
+If the command is "none," it:
+
+Turns off the red and green LEDs.
+Turns on the blue LED.
+Updates the LCD with a "Tespit Edilmedi" message, indicating that nothing has been detected.
+Flashes the blue LED briefly.
